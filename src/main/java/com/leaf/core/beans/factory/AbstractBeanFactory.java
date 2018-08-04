@@ -2,6 +2,7 @@ package com.leaf.core.beans.factory;
 
 import com.leaf.core.beans.BeanDefinition;
 import com.leaf.core.beans.BeanPostProcessor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -12,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author yihua.huang@dianping.com
  */
+@Slf4j
 public abstract class AbstractBeanFactory implements BeanFactory  {
 
 	private Map<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<String, BeanDefinition>();
@@ -28,9 +30,13 @@ public abstract class AbstractBeanFactory implements BeanFactory  {
 		}
 		Object bean = beanDefinition.getBean();
 		if (bean == null) {
+
 			bean = doCreateBean(beanDefinition);
             bean = initializeBean(bean, name);
             beanDefinition.setBean(bean);
+			log.info("新增bean实例:"+bean.getClass().getName());
+		}else {
+			//log.info("bean实例已存在，直接返回:"+bean.getClass().getName());
 		}
 		return bean;
 	}
@@ -52,6 +58,7 @@ public abstract class AbstractBeanFactory implements BeanFactory  {
 	}
 
 	public void registerBeanDefinition(String name, BeanDefinition beanDefinition) throws Exception {
+		log.info("注册bean:"+name+"  "+beanDefinition.getBeanClassName());
 		beanDefinitionMap.put(name, beanDefinition);
 		beanDefinitionNames.add(name);
 	}

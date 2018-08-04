@@ -15,7 +15,7 @@ import java.util.List;
 @Bean("fooddao")
 public class FoodDao {
 
-    FoodDao(){
+    public FoodDao(){
         this.list=new ArrayList<String>();
     }
 

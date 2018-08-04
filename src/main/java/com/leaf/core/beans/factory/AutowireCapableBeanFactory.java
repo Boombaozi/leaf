@@ -6,6 +6,7 @@ import com.leaf.core.BeanReference;
 import com.leaf.core.aop.BeanFactoryAware;
 import com.leaf.core.beans.BeanDefinition;
 import com.leaf.core.beans.PropertyValue;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -15,8 +16,10 @@ import java.lang.reflect.Method;
  * 
  * @author yihua.huang@dianping.com
  */
+@Slf4j
 public class AutowireCapableBeanFactory extends AbstractBeanFactory {
 
+	//注入
 	protected void applyPropertyValues(Object bean, BeanDefinition mbd) throws Exception {
 		if (bean instanceof BeanFactoryAware) {
 			((BeanFactoryAware) bean).setBeanFactory(this);
@@ -25,7 +28,9 @@ public class AutowireCapableBeanFactory extends AbstractBeanFactory {
 			Object value = propertyValue.getValue();
 			if (value instanceof BeanReference) {
 				BeanReference beanReference = (BeanReference) value;
+
 				value = getBean(beanReference.getName());
+				log.info("注入:["+value.getClass().getName()+"]"+beanReference.getName()+"-->["+bean.getClass().getName()+"]"+propertyValue.getName());
 			}
 
 			try {

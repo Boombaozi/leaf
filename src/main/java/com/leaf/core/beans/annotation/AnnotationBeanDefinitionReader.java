@@ -17,38 +17,24 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
+/**
+ * @program: leaf
+ * @description: 通过扫描注解的方式注入bean
+ * @author: huiyuhang  github.com/Boombaozi
+ * @create: 2018-08
+ **/
 @Slf4j
 public class AnnotationBeanDefinitionReader extends AbstractBeanDefinitionReader {
 
-
-    //从父类继承的字段及方法
-//    private Map<String,BeanDefinition> registry;
-//
-//    private ResourceLoader resourceLoader;
-//
-//    protected AbstractBeanDefinitionReader(ResourceLoader resourceLoader) {
-//        this.registry = new HashMap<String, BeanDefinition>();
-//        this.resourceLoader = resourceLoader;
-//    }
-//
-//    public Map<String, BeanDefinition> getRegistry() {
-//        return registry;
-//    }
-//
-//    public ResourceLoader getResourceLoader() {
-//        return resourceLoader;
-//    }
-//
     //用来存放扫描到的全限定类名
     private List<String> classnames = new ArrayList<String>();
 
     //构造方法，可以指定任意的resourLoader
-    protected AnnotationBeanDefinitionReader(ResourceLoader resourceLoader) {
+    public AnnotationBeanDefinitionReader(ResourceLoader resourceLoader) {
         super(resourceLoader);
     }
 
-
+    //通过指定的resourLoader来解析输入的字符串
     @Override
     public void loadBeanDefinitions(String propertiesfile) throws Exception {
         Properties prop = new Properties();
@@ -63,10 +49,6 @@ public class AnnotationBeanDefinitionReader extends AbstractBeanDefinitionReader
 
         //开始注册bean
         findBeanAndLoad();
-
-        for (String s : classnames) {
-            System.out.println(s);
-        }
     }
 
 
@@ -86,7 +68,7 @@ public class AnnotationBeanDefinitionReader extends AbstractBeanDefinitionReader
             if (c.isAnnotationPresent(Bean.class) ||
                     c.isAnnotationPresent(Controller.class) ||
                     c.isAnnotationPresent(Service.class)) {
-                System.out.println("开始扫描");
+
                 processBeanDefinition(c);
 
             }
@@ -98,49 +80,52 @@ public class AnnotationBeanDefinitionReader extends AbstractBeanDefinitionReader
     //
     protected void processBeanDefinition(Class c) {
         if (c.isAnnotationPresent(Controller.class)) {
-            System.out.println("是controller");
+            // System.out.println("是controller");
             String name = ((Controller) c.getAnnotation(Controller.class)).value();
             String className = c.getName();
+
             BeanDefinition beanDefinition = new BeanDefinition();
+            beanDefinition.setBeanClassName(className);
+
             processProperty(c, beanDefinition);
-            getRegistry().put(name, beanDefinition);
+            this.getRegistry().put(name, beanDefinition);
 
         } else if (c.isAnnotationPresent(Service.class)) {
-            System.out.println("是Service");
-            String name = ((Service)c.getAnnotation(Service.class)).value();
+            // System.out.println("是Service");
+            String name = ((Service) c.getAnnotation(Service.class)).value();
             String className = c.getName();
+
             BeanDefinition beanDefinition = new BeanDefinition();
+            beanDefinition.setBeanClassName(className);
+
             processProperty(c, beanDefinition);
-            getRegistry().put(name, beanDefinition);
+            this.getRegistry().put(name, beanDefinition);
 
 
         } else if (c.isAnnotationPresent(Bean.class)) {
-            System.out.println("是Bean");
+            //  System.out.println("是Bean");
             String name = ((Bean) c.getAnnotation(Bean.class)).value();
             String className = c.getName();
 
             BeanDefinition beanDefinition = new BeanDefinition();
+            beanDefinition.setBeanClassName(className);
+
             processProperty(c, beanDefinition);
-            getRegistry().put(name, beanDefinition);
+            this.getRegistry().put(name, beanDefinition);
 
         }
 
-
-//
-//        processProperty(ele, beanDefinition);
-//        beanDefinition.setBeanClassName(className);
-//        getRegistry().put(name, beanDefinition);
     }
 
-
+    //property放入内容
     private void processProperty(Class c, BeanDefinition beanDefinition) {
-        beanDefinition.setBeanClassName(c.getName());
-        Field[] fields= c.getFields();
-        for(Field field:fields){
+        Field[] fields = c.getDeclaredFields();
+
+        for (Field field : fields) {
             field.setAccessible(true);
-            System.out.println("Field"+field.getName());
-            if(field.isAnnotationPresent(Autowired.class)){
-                String value=  ((Autowired) field.getAnnotation(Autowired.class)).value();
+            //System.out.println("Field"+field.getName());
+            if (field.isAnnotationPresent(Autowired.class)) {
+                String value = ((Autowired) field.getAnnotation(Autowired.class)).value();
                 BeanReference beanReference = new BeanReference(value);
                 beanDefinition.getPropertyValues().addPropertyValue(new PropertyValue(field.getName(), beanReference));
             }
@@ -148,7 +133,7 @@ public class AnnotationBeanDefinitionReader extends AbstractBeanDefinitionReader
 
     }
 
-    //递归扫描文件
+    //递归扫描文件，获得全限定类名
     private void scanFile(String base) {
         base = base.replaceAll("\\.", "/");
         URL url = this.getClass().getResource("/" + base);

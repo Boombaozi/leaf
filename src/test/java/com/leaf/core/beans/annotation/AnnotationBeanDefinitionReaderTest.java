@@ -17,7 +17,12 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
-
+/**
+ * @program: leaf
+ * @description:
+ * @author: huiyuhang  github.com/Boombaozi
+ * @create: 2018-08
+ **/
 public class AnnotationBeanDefinitionReaderTest {
     @Test
     public void loadBeanDefinitions() throws Exception {
